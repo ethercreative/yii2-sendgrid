@@ -16,6 +16,8 @@ class Mailer
 	private $defaults = [
 		'to' => [],
 		'from' => null,
+		'cc' => [],
+		'bcc' => [],
 		'subject' => null,
 		'layout' => null,
 		'text' => null,
@@ -43,6 +45,12 @@ class Mailer
 
 		foreach ((array) $options['to'] as $to)
 			$email->addTo($to);
+
+		foreach ((array) $options['cc'] as $cc)
+			$email->addCc($cc);
+
+		foreach ((array) $options['bcc'] as $bcc)
+			$email->addBcc($bcc);
 
 		$email->setSubject($options['subject']);
 
