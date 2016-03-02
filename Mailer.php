@@ -11,7 +11,7 @@ use \SendGrid\Email;
 
 class Mailer
 {
-	public $key;
+	public $key, $from;
 
 	private $defaults = [
 		'to' => [],
@@ -55,9 +55,13 @@ class Mailer
 		$email->setSubject($options['subject']);
 
 		if (!empty($options['from']))
-			$email->setFrom($options['from']);
+			$from = $options['from'];
+		elseif ($this->from)
+			$from = $this->from;
 		else
-			$email->setFrom(\Yii::$app->params['sendgrid']['from']);
+			$from = \Yii::$app->params['sendgrid']['from'];
+
+		$email->setFrom($from);
 
 		if (!empty($options['text']))
 			$email->setText($options['text']);
