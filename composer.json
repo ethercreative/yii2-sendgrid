@@ -3,6 +3,7 @@
 	"description": "Simple SendGrid wrapper for sending only",
 	"type": "yii2-extension",
 	"keywords": ["yii2", "extension", "sendgrid"],
+	"license": "MIT",
 	"version": "1.0.0",
 	"authors": [
 		{
