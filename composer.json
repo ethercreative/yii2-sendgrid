@@ -1,0 +1,21 @@
+{
+	"name": "ethercreative/yii2-sendgrid",
+	"description": "Simple SendGrid wrapper for sending only",
+	"type": "yii2-extension",
+	"keywords": ["yii2", "extension", "sendgrid"],
+	"version": "1.0",
+	"authors": [
+		{
+			"name": "Matt Edmonston",
+			"email": "matt@ethercreative.co.uk"
+		}
+	],
+	"require": {
+		"sendgrid/sendgrid": "~4.0"
+	},
+	"autoload": {
+        "psr-4": {
+            "ethercreative\\sendgrid\\": ""
+        }
+    }
+}
