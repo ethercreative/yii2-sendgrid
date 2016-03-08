@@ -1,5 +1,5 @@
 # yii2-sendgrid
-Simple SendGrid wrapper for sending only
+Simple SendGrid wrapper for sending and global unsubscribe
 
 Do not use this extension
 
