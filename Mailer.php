@@ -22,6 +22,7 @@ class Mailer
 		'layout' => null,
 		'text' => null,
 		'html' => null,
+		'category' => null,
 		'data' => [],
 		'headers' => [
 			'X-Sent-Using' => 'SendGrid-API',
@@ -62,6 +63,9 @@ class Mailer
 			$from = \Yii::$app->params['sendgrid']['from'];
 
 		$email->setFrom($from);
+
+		if (!empty($options['category']))
+			$email->setCategory($options['category']);
 
 		if (!empty($options['text']))
 			$email->setText($options['text']);
