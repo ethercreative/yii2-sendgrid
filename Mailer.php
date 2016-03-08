@@ -23,6 +23,7 @@ class Mailer
 		'text' => null,
 		'html' => null,
 		'category' => null,
+		'categories' => [],
 		'data' => [],
 		'headers' => [
 			'X-Sent-Using' => 'SendGrid-API',
@@ -66,6 +67,9 @@ class Mailer
 
 		if (!empty($options['category']))
 			$email->setCategory($options['category']);
+
+		if (!empty($options['category']))
+			$email->setCategories($options['categories']);
 
 		if (!empty($options['text']))
 			$email->setText($options['text']);
