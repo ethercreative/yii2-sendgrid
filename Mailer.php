@@ -2,46 +2,98 @@
 
 namespace ethercreative\sendgrid;
 
-use Yii;
-use yii\base\InvalidConfigException;
-use yii\helpers\Json;
-
-use \SendGrid;
-use \SendGrid\Email;
-
 class Mailer
 {
 	public $key, $from;
 
-	private $defaults = [
-		'to' => [],
+	private $_connection, $_app, $_version;
+
+	private $defaults = array(
+		'to' => array(),
 		'from' => null,
-		'cc' => [],
-		'bcc' => [],
+		'cc' => array(),
+		'bcc' => array(),
 		'subject' => null,
 		'layout' => null,
 		'text' => null,
 		'html' => null,
 		'category' => null,
-		'categories' => [],
-		'data' => [],
+		'categories' => array(),
+		'data' => array(),
 		'headers' => [
 			'X-Sent-Using' => 'SendGrid-API',
 			'X-Transport' => 'web',
 		],
-	];
+	);
 
-	public function send(array $options)
+	public function __construct($key = null, $from = null)
+	{
+		if ($key) $this->key = $key;
+		if ($from) $this->from = $from;
+
+		if(!empty(\Yii::$app))
+		{
+			$this->_app = \Yii::$app;
+			$this->_version = 2;
+		}
+		else
+		{
+			$this->_app = \Yii::app();
+			$this->_version = 1;
+		}
+
+		return $this;
+	}
+
+	private function getConnection()
+	{
+		$this->_connection = new \SendGrid($this->getKey());
+
+		return $this->_connection;
+	}
+
+	private function getKey()
 	{
 		if ($this->key)
 			$key = $this->key;
-		elseif (!empty(\Yii::$app->params['sendgrid']['key']))
-			$key = \Yii::$app->params['sendgrid']['key'];
+		elseif (!empty($this->_app->params['sendgrid']['key']))
+			$key = $this->_app->params['sendgrid']['key'];
 		else
-			throw new InvalidConfigException('API key required');
+		{
+			$message = 'API key required';
+			if ($this->_version == 2)
+				throw new \yii\base\InvalidConfigException($message);
+			else
+				throw new \CHttpException(400, $message);
+		}
 
-		$sendgrid = new SendGrid($key);
-		$email = new Email;
+		return $key;
+	}
+
+	private function getFrom($options)
+	{
+		if (!empty($options['from']))
+			$from = $options['from'];
+		elseif ($this->from)
+			$from = $this->from;
+		elseif (!empty($this->_app->params['sendgrid']['from']))
+			$from = $this->_app->params['sendgrid']['from'];
+		else
+		{
+			$message = 'From address required';
+			if ($this->_version == 2)
+				throw new \yii\base\InvalidConfigException($message);
+			else
+				throw new \CHttpException(400, $message);
+		}
+
+		return $from;
+	}
+
+	public function send(array $options)
+	{
+		$connection = $this->getConnection();
+		$email = new \SendGrid\Email;
 
 		$options = array_replace_recursive($this->defaults, $options);
 
@@ -56,19 +108,12 @@ class Mailer
 
 		$email->setSubject($options['subject']);
 
-		if (!empty($options['from']))
-			$from = $options['from'];
-		elseif ($this->from)
-			$from = $this->from;
-		else
-			$from = \Yii::$app->params['sendgrid']['from'];
-
-		$email->setFrom($from);
+		$email->setFrom($this->getFrom($options));
 
 		if (!empty($options['category']))
 			$email->setCategory($options['category']);
 
-		if (!empty($options['category']))
+		if (!empty($options['categories']))
 			$email->setCategories($options['categories']);
 
 		if (!empty($options['text']))
@@ -80,10 +125,17 @@ class Mailer
 		}
 		elseif (!empty($options['layout']) && !empty($options['data']))
 		{
-			$path = \Yii::$app->basePath . '/mail/sendgrid/' . $options['layout'] . '.html';
+			$path = $this->_app->basePath . '/mail/sendgrid/' . $options['layout'] . '.html';
 
 			if (!file_exists($path))
-				throw new \yii\web\NotFoundHttpException('Layout "' . $options['layout'] . '" cannot be found in "/mail/sendgrid/".');
+			{
+				$message = 'Layout "' . $options['layout'] . '" cannot be found in "/mail/sendgrid/".';
+
+				if ($this->_version == 2)
+					throw new \yii\web\NotFoundHttpException($message);
+				else
+					throw new \CHttpException(404, $message);
+			}
 
 			$params = [
 				'subject' => $options['subject'],
@@ -98,6 +150,12 @@ class Mailer
 			$email->setHtml($html);
 		}
 
-		return $response = $sendgrid->send($email);
+		return $response = $connection->send($email);
+	}
+
+	public function unsubscribe($email)
+	{
+		$connection = $this->getConnection();
+		return $connection->asm_suppressions->post(1, $email);
 	}
 }
