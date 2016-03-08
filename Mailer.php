@@ -20,10 +20,10 @@ class Mailer
 		'category' => null,
 		'categories' => array(),
 		'data' => array(),
-		'headers' => [
+		'headers' => array(
 			'X-Sent-Using' => 'SendGrid-API',
 			'X-Transport' => 'web',
-		],
+		),
 	);
 
 	public function __construct($key = null, $from = null)
