@@ -137,9 +137,9 @@ class Mailer
 					throw new \CHttpException(404, $message);
 			}
 
-			$params = [
+			$params = array(
 				'subject' => $options['subject'],
-			];
+			);
 
 			foreach ($options['data'] as $key => $value)
 				$params['{{' . $key . '}}'] = $value;
